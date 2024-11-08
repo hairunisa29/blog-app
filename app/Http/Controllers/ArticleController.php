@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Article;
+use App\Models\Author;
 
 class ArticleController extends Controller
 {
@@ -21,7 +22,10 @@ class ArticleController extends Controller
      */
     public function create()
     {
-        //
+        // Get all authors
+        $authors = Author::all();
+
+        return view('articles.add', compact('authors'));
     }
 
     /**
@@ -29,7 +33,22 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validasi data
+        $validatedData = $request->validate([
+            'title' => 'required',
+            'description' => 'required',
+            'author_id' => 'required'
+        ],
+        [
+            'title.required' => 'Title is required',
+            'description.required' => 'Description is required',
+            'author_id.required' => 'Author is required'
+        ]
+        );
+
+        // Create a new article
+        Article::create($validatedData);
+        return redirect()->route('articles.index')->with('success', 'Article created successfully!');
     }
 
     /**
@@ -47,24 +66,53 @@ class ArticleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        //
+    public function edit(int $id)
+    {   
+        // Fetch article by id
+        $article = Article::findOrFail($id);
+
+        // Get all authors
+        $authors = Author::all();
+
+        // Return the edit view
+        return view('articles.edit', compact('article', 'authors'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, int $id)
     {
-        //
+        // validasi data
+        $validatedData = $request->validate([
+            'title' => 'required',
+            'description' => 'required',
+            'author_id' => 'required'
+        ],
+        [
+            'title.required' => 'Title is required',
+            'description.required' => 'Description is required',
+            'author_id.required' => 'Author is required'
+        ]
+        );
+
+        // Fetch the article and update
+        $article = Article::findOrFail($id);
+        $article->update($validatedData);
+
+        // Redirect to the articles index with a success message
+        return redirect()->route('articles.index')->with('success', 'Article updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        //
+        // Find the article by id
+        $article = Article::findOrFail($id);
+        $article->delete();
+
+        return redirect()->route('articles.index')->with('success', 'Article deleted successfully!');
     }
 }
